@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Flight Telemetry // Active Mission Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;600&family=Geist:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="mission-shell">
+    <header class="mission-header">
+      <div class="mission-brand">
+        <span class="badge-active">TELEMETRY STREAMING</span>
+        <h1>NEXUS-09 ORBITAL NODE</h1>
+        <p class="mission-sub">Live mobile tunnel verified via AnyRun zero-config gateway</p>
+      </div>
+      <div class="mission-meta">
+        <div class="meta-block">
+          <span class="label">UPTIME</span>
+          <span class="value" id="uptimeCounter">00:14:32</span>
+        </div>
+        <div class="meta-block">
+          <span class="label">LATENCY</span>
+          <span class="value">18ms</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="grid-board">
+      <div class="metric-tile">
+        <span class="metric-title">TRAJECTORY DRIFT</span>
+        <span class="metric-number">0.0042&deg;</span>
+        <div class="metric-bar"><div class="fill" style="width: 14%;"></div></div>
+        <span class="metric-sub">Nominal variance across 3 axes</span>
+      </div>
+
+      <div class="metric-tile">
+        <span class="metric-title">PAYLOAD THERMAL</span>
+        <span class="metric-number">294.15 K</span>
+        <div class="metric-bar"><div class="fill" style="width: 62%;"></div></div>
+        <span class="metric-sub">Cryogenic regulator stable</span>
+      </div>
+
+      <div class="metric-tile">
+        <span class="metric-title">DOWNLINK BITRATE</span>
+        <span class="metric-number">48.2 Mb/s</span>
+        <div class="metric-bar"><div class="fill" style="width: 88%;"></div></div>
+        <span class="metric-sub">Full bandwidth throughput</span>
+      </div>
+
+      <div class="metric-tile alert-tile">
+        <span class="metric-title">TUNNEL RELAY</span>
+        <span class="metric-number">ACTIVE</span>
+        <div class="metric-bar"><div class="fill alert-fill" style="width: 100%;"></div></div>
+        <span class="metric-sub">Zero-friction external ingress</span>
+      </div>
+    </main>
+
+    <footer class="mission-footer">
+      <span>DEVICE TEST TARGET // ANYRUN UNIVERSAL TUNNEL SYSTEM</span>
+      <span>NODE 24 / ESM / WINDOWS</span>
+    </footer>
+  </div>
+
+  <script>
+    let seconds = 872;
+    setInterval(() => {
+      seconds++;
+      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      document.getElementById('uptimeCounter').textContent = `${hrs}:${mins}:${secs}`;
+    }, 1000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+name: Bug Report
+description: Create a report to help us fix an issue with AnyRun
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report an issue!
+  - type: input
+    id: project-type
+    attributes:
+      label: Target Framework / Architecture
+      description: What project type were you running (e.g. Next.js, Vite, FastAPI, Django, Static)?
+      placeholder: e.g. Next.js 14, FastAPI
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Ubuntu/Debian)
+        - Linux (Other)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Run 'any-run ./my-project'
+        2. Expected behavior ...
+        3. Observed error ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Terminal / Console Output
+      description: Paste any error messages or relevant logs from AnyRun.
+      render: shell

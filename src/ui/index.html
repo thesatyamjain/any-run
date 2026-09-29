@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AnyRun // Universal Project Runner &amp; Tunnel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Drag & Drop Full Window Target Overlay -->
+    <div class="drag-drop-overlay hidden" id="dragDropOverlay">
+      <div class="drag-drop-modal">
+        <div class="drag-drop-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            <line x1="12" y1="11" x2="12" y2="17"></line>
+            <polyline points="9 14 12 17 15 14"></polyline>
+          </svg>
+        </div>
+        <h2 class="drag-drop-title">DROP PROJECT FOLDER TO LAUNCH</h2>
+        <p class="drag-drop-subtitle">Release anywhere to inspect architecture and stage deployment</p>
+        <span class="drag-drop-hint">SUPPORTS NODE.JS, PYTHON, FASTAPI, GO, RUST, PHP, STATIC WEB &amp; MORE</span>
+      </div>
+    </div>
+
+    <!-- Top Header Navigation -->
+    <header class="top-nav">
+      <div class="brand-group">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">ANYRUN</h1>
+          <span class="brand-subtitle">UNIVERSAL TUNNEL DISPATCHER</span>
+        </div>
+      </div>
+
+      <div class="telemetry-strip">
+        <div class="telemetry-chip">
+          <span class="status-pulse" id="statusPulse"></span>
+          <span class="telemetry-label">STATE</span>
+          <span class="telemetry-val" id="telemetryStatus">IDLE</span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="telemetry-label">UPTIME</span>
+          <span class="telemetry-val" id="telemetryUptime">00:00</span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="telemetry-label">RAM</span>
+          <span class="telemetry-val" id="telemetryRam">-- MB</span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="telemetry-label">PORT</span>
+          <span class="telemetry-val" id="telemetryPort">--</span>
+        </div>
+        <div class="telemetry-chip">
+          <span class="telemetry-label">TUNNEL</span>
+          <span class="telemetry-val" id="telemetryProvider">CLOUDFLARE</span>
+        </div>
+        <button class="btn btn-secondary btn-small shutdown-chip" id="shutdownAppBtn" title="Shut down AnyRun & all background services">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+            <line x1="12" y1="2" x2="12" y2="12"></line>
+          </svg>
+          <span>EXIT</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Bento -->
+    <main class="main-bento">
+      <!-- Left Column: Project Control Panel -->
+      <section class="bento-card control-panel">
+        <div class="card-header">
+          <div class="card-title-group">
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <h2>PROJECT DIRECTORY</h2>
+          </div>
+          <span class="header-badge" id="archBadge">SCAN REQUIRED</span>
+        </div>
+
+        <div class="input-row">
+          <div class="input-wrapper">
+            <input type="text" id="projectPathInput" placeholder="Drag folder here or enter path (e.g. E:\JainJinvani)" spellcheck="false">
+          </div>
+          <button class="btn btn-secondary" id="browseBtn" title="Browse Folders">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z"></path>
+            </svg>
+            <span>BROWSE</span>
+          </button>
+          <button class="btn btn-secondary" id="scanBtn" title="Scan Architecture">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span>INSPECT</span>
+          </button>
+        </div>
+
+        <!-- Recent Projects Quick Launch Strip -->
+        <div class="recent-projects-bar hidden" id="recentProjectsBar">
+          <span class="recent-label">RECENT:</span>
+          <div class="recent-chips" id="recentChips"></div>
+        </div>
+
+        <!-- Architecture Inspection Details -->
+        <div class="spec-grid" id="specGrid">
+          <div class="spec-item">
+            <span class="spec-label">RUNTIME ARCHITECTURE</span>
+            <span class="spec-val" id="specRuntime">Not detected</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">DETECTED STACK</span>
+            <span class="spec-val" id="specStack">Standby</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">EXECUTION ENTRYPOINT</span>
+            <code class="spec-code" id="specCommand">Select folder to view command</code>
+          </div>
+        </div>
+
+        <!-- Configuration Settings Bar -->
+        <div class="config-bar">
+          <div class="config-col">
+            <label for="portOverrideInput">PORT ASSIGNMENT</label>
+            <input type="number" id="portOverrideInput" placeholder="Auto" min="1024" max="65535">
+          </div>
+          <div class="config-col">
+            <label for="tunnelSelect">TUNNEL PROVIDER</label>
+            <select id="tunnelSelect">
+              <option value="auto">Cloudflare Quick (Default)</option>
+              <option value="pinggy">Pinggy OpenSSH</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Launch Controls -->
+        <div class="action-bar">
+          <button class="btn btn-primary" id="runActionBtn">
+            <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            <span id="runActionText">ONE-CLICK RUN &amp; TUNNEL</span>
+          </button>
+          <button class="btn btn-secondary" id="restartBtn" disabled title="Restart Application">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Keyboard Shortcuts Bar -->
+        <div class="hotkey-strip">
+          <span class="hotkey-item"><kbd>O</kbd> Open</span>
+          <span class="hotkey-item"><kbd>C</kbd> Copy URL</span>
+          <span class="hotkey-item"><kbd>W</kbd> Copy Wi-Fi</span>
+          <span class="hotkey-item"><kbd>R</kbd> Restart</span>
+          <span class="hotkey-item"><kbd>Q</kbd> Stop</span>
+        </div>
+      </section>
+
+      <!-- Right Column: Tunnel Link & Scannable QR -->
+      <section class="bento-card tunnel-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <rect x="7" y="7" width="3" height="3"></rect>
+              <rect x="14" y="7" width="3" height="3"></rect>
+              <rect x="7" y="14" width="3" height="3"></rect>
+            </svg>
+            <h2>PUBLIC TUNNEL &amp; WI-FI GATEWAY</h2>
+          </div>
+          <div class="mode-toggle-group">
+            <button class="mode-pill active" id="modeTunnelBtn">PUBLIC TUNNEL</button>
+            <button class="mode-pill" id="modeLanBtn">LOCAL WI-FI (FASTEST)</button>
+          </div>
+        </div>
+
+        <!-- QR Code Canvas / Vector Container -->
+        <div class="qr-presentation">
+          <div class="qr-target-frame" id="qrFrame">
+            <div class="qr-placeholder" id="qrPlaceholder">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <p>Tunnel standby. Launch a project to generate live QR code.</p>
+            </div>
+            <img id="qrImage" class="qr-image hidden" alt="Public Tunnel QR Code">
+          </div>
+
+          <div class="tunnel-telemetry-panel">
+            <div class="link-box">
+              <span class="link-label" id="linkLabel">PUBLIC HTTPS URL</span>
+              <div class="link-input-group">
+                <input type="text" id="tunnelUrlInput" readonly placeholder="https://tunnel.pending.activation">
+                <button class="btn btn-secondary btn-icon-only" id="copyUrlBtn" title="Copy URL">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <a class="btn btn-secondary btn-icon-only" id="openExternalBtn" target="_blank" rel="noopener noreferrer" title="Open in New Window">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="tunnel-meta-row">
+              <div class="meta-item">
+                <span class="meta-label">WI-FI LAN TARGET</span>
+                <span class="meta-val" id="metaLan">--</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">ROUTING PROTOCOL</span>
+                <span class="meta-val" id="metaRouting">QUIC / Host Rewritten</span>
+              </div>
+            </div>
+
+            <div class="preview-actions">
+              <button class="btn btn-tertiary" id="toggleMobilePreviewBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                  <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                </svg>
+                <span>DEVICE PREVIEW</span>
+              </button>
+              <button class="btn btn-tertiary" id="downloadQrBtn" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                <span>EXPORT QR</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom Span: Real-time Streaming Process Console & Traffic Inspector -->
+      <section class="bento-card console-card">
+        <div class="card-header console-header">
+          <div class="console-tab-group">
+            <button class="console-tab active" id="tabConsoleBtn">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              <span>SYSTEM CONSOLE</span>
+            </button>
+            <button class="console-tab" id="tabTrafficBtn">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>LIVE TRAFFIC</span>
+              <span class="tab-badge" id="trafficBadge">0</span>
+            </button>
+          </div>
+
+          <div class="console-actions" id="consoleControls">
+            <input type="text" id="logFilterInput" class="console-filter" placeholder="Filter logs..." spellcheck="false">
+            <button class="btn btn-tertiary btn-small" id="clearLogsBtn">CLEAR</button>
+            <label class="autoscroll-toggle">
+              <input type="checkbox" id="autoScrollCheck" checked>
+              <span>AUTOSCROLL</span>
+            </label>
+          </div>
+
+          <div class="console-actions hidden" id="trafficControls">
+            <select id="trafficMethodFilter" class="console-filter filter-select">
+              <option value="ALL">All Methods</option>
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+            <select id="trafficStatusFilter" class="console-filter filter-select">
+              <option value="ALL">All Status</option>
+              <option value="2xx">2xx (Success)</option>
+              <option value="3xx">3xx (Redirect)</option>
+              <option value="4xx5xx">4xx / 5xx (Errors)</option>
+            </select>
+            <input type="text" id="trafficFilterInput" class="console-filter" placeholder="Filter path..." spellcheck="false">
+            <button class="btn btn-tertiary btn-small" id="clearTrafficBtn">CLEAR</button>
+          </div>
+        </div>
+
+        <div class="console-output" id="consoleOutput">
+          <div class="log-entry system">
+            <span class="log-time">[SYSTEM]</span>
+            <span class="log-msg">AnyRun supervisor initialized. Ready to launch project.</span>
+          </div>
+        </div>
+
+        <div class="traffic-output hidden" id="trafficOutput">
+          <div class="traffic-table-header">
+            <span class="th col-time">TIME</span>
+            <span class="th col-method">METHOD</span>
+            <span class="th col-path">PATH</span>
+            <span class="th col-status">STATUS</span>
+            <span class="th col-duration">LATENCY</span>
+          </div>
+          <div class="traffic-rows" id="trafficRows">
+            <div class="traffic-empty" id="trafficEmpty">
+              No HTTP traffic recorded yet. Requests routed via Local Wi-Fi or Public Tunnel will stream live here.
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile Device Simulator Modal -->
+    <div class="modal-overlay hidden" id="previewModal">
+      <div class="modal-window device-modal" id="deviceModalWindow">
+        <div class="modal-header">
+          <div class="simulator-controls">
+            <h3>DEVICE VIEWPORT SIMULATOR</h3>
+            <div class="simulator-actions">
+              <select id="devicePresetSelect" class="device-select">
+                <option value="iphone">iPhone 15 (393 × 852)</option>
+                <option value="pixel">Pixel 8 (412 × 915)</option>
+                <option value="ipad">iPad Mini (768 × 1024)</option>
+                <option value="desktop">Responsive</option>
+              </select>
+              <button class="btn btn-tertiary btn-small" id="rotateDeviceBtn" title="Rotate Orientation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+                </svg>
+                <span>ROTATE</span>
+              </button>
+              <button class="btn btn-tertiary btn-small" id="reloadDeviceBtn" title="Reload Viewport">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="closePreviewBtn">&times;</button>
+        </div>
+        <div class="device-frame" id="deviceFrame">
+          <div class="device-notch" id="deviceNotch"></div>
+          <iframe id="previewIframe" src="about:blank" title="Mobile Simulator Viewport"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- HTTP Request Details Inspector Modal (ngrok style) -->
+    <div class="modal-overlay hidden" id="requestDetailModal">
+      <div class="modal-window request-modal">
+        <div class="modal-header">
+          <div class="req-header-left">
+            <span class="method-badge" id="reqDetailMethod">GET</span>
+            <span class="req-detail-path" id="reqDetailPath">/api/users</span>
+            <span class="status-badge" id="reqDetailStatus">200</span>
+            <span class="req-detail-duration" id="reqDetailDuration">12ms</span>
+          </div>
+          <div class="req-header-right">
+            <button class="btn btn-secondary btn-small" id="replayReqBtn" title="Replay this HTTP request against the local server">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span id="replayBtnText">REPLAY</span>
+            </button>
+            <button class="btn btn-secondary btn-small" id="copyCurlBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>COPY CURL</span>
+            </button>
+            <button class="modal-close-btn" id="closeReqDetailBtn">&times;</button>
+          </div>
+        </div>
+        <div class="req-detail-body">
+          <div class="req-section">
+            <span class="req-section-title">REQUEST HEADERS</span>
+            <div class="headers-list" id="reqHeadersList"></div>
+          </div>
+          <div class="req-section">
+            <span class="req-section-title">RESPONSE HEADERS</span>
+            <div class="headers-list" id="resHeadersList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folder Browser Modal -->
+    <div class="modal-overlay hidden" id="browseModal">
+      <div class="modal-window browse-modal">
+        <div class="modal-header">
+          <h3>DIRECTORY NAVIGATOR</h3>
+          <button class="modal-close-btn" id="closeBrowseBtn">&times;</button>
+        </div>
+        <div class="browse-breadcrumbs">
+          <span id="browseCurrentPath">C:/</span>
+          <button class="btn btn-tertiary btn-small" id="browseUpBtn">UP ONE LEVEL</button>
+        </div>
+        <div class="browse-list" id="browseList">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancelBrowseBtn">CANCEL</button>
+          <button class="btn btn-primary" id="selectFolderBtn">SELECT CURRENT DIRECTORY</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

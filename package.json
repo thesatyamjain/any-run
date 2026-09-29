@@ -1,0 +1,40 @@
+{
+  "name": "any-run",
+  "version": "1.0.0",
+  "description": "One-click universal project runner, dynamic port detector, public tunnel creator, and QR code generator",
+  "main": "src/index.js",
+  "bin": {
+    "any-run": "./bin/any-run.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node bin/any-run.js",
+    "test": "node test/self-check.js"
+  },
+  "keywords": [
+    "runner",
+    "tunnel",
+    "qr-code",
+    "cloudflare",
+    "pinggy",
+    "ngrok",
+    "developer-tool"
+  ],
+  "author": "",
+  "license": "MIT",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "any-run.bat",
+    "any-run.vbs"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "localtunnel": "^2.0.2",
+    "qrcode": "^1.5.4"
+  }
+}
