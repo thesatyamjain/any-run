@@ -102,7 +102,7 @@
           ]
         }
       ],
-      "maintainer": "The Software Co. <creativitywithsatyam@gmail.com>",
+      "maintainer": "The Software Co. <thesoftwarecompany@zohomail.in>",
       "vendor": "The Software Co.",
       "category": "Development",
       "icon": "src/desktop/assets/icon.png"
@@ -119,7 +119,7 @@
   ],
   "author": {
     "name": "The Software Co.",
-    "email": "creativitywithsatyam@gmail.com",
+    "email": "thesoftwarecompany@zohomail.in",
     "url": "https://github.com/thesatyamjain"
   },
   "publisher": "The Software Co.",
