@@ -2,14 +2,104 @@
   "name": "any-run",
   "version": "1.0.0",
   "description": "One-click universal project runner, dynamic port detector, public tunnel creator, and QR code generator",
-  "main": "src/index.js",
+  "main": "src/desktop/main.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "any-run": "./bin/any-run.js"
   },
   "type": "module",
   "scripts": {
     "start": "node bin/any-run.js",
-    "test": "node test/self-check.js"
+    "app": "electron src/desktop/main.js",
+    "desktop": "electron src/desktop/main.js",
+    "shortcut": "node scripts/create-shortcut.js",
+    "pack": "node scripts/package-app.js",
+    "build:app": "node scripts/package-app.js",
+    "build:app:dist": "electron-builder",
+    "build:app:win": "node scripts/package-app.js",
+    "build:app:mac": "electron-builder --mac",
+    "build:app:linux": "electron-builder --linux",
+    "build:app:all": "electron-builder -mwl",
+    "test": "node test/self-check.js && node test/desktop-check.js"
+  },
+  "build": {
+    "appId": "com.anyrun.desktop",
+    "productName": "AnyRun",
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "directories": {
+      "output": "dist-desktop"
+    },
+    "files": [
+      "src/**/*",
+      "bin/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/desktop/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AnyRun"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.developer-tools",
+      "icon": "src/desktop/assets/icon.png"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Development",
+      "icon": "src/desktop/assets/icon.png"
+    }
   },
   "keywords": [
     "runner",
@@ -20,15 +110,28 @@
     "ngrok",
     "developer-tool"
   ],
-  "author": "",
+  "author": "AnyRun Open Source Community",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/any-run/any-run.git"
+  },
+  "bugs": {
+    "url": "https://github.com/any-run/any-run/issues"
+  },
+  "homepage": "https://github.com/any-run/any-run#readme",
   "files": [
     "bin",
     "src",
+    "scripts",
     "README.md",
     "LICENSE",
     "any-run.bat",
-    "any-run.vbs"
+    "any-run.vbs",
+    "run-app.bat",
+    "run-app.vbs",
+    "run-app.sh",
+    "create-desktop-shortcut.bat"
   ],
   "engines": {
     "node": ">=18.0.0"
@@ -36,5 +139,9 @@
   "dependencies": {
     "localtunnel": "^2.0.2",
     "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3"
   }
 }

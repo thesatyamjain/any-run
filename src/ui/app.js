@@ -751,8 +751,17 @@ logFilterInput.addEventListener('input', () => {
   });
 });
 
-// Folder Browser Logic (Supports multi-disk Windows browsing)
-browseBtn.addEventListener('click', () => {
+// Folder Browser Logic (Native OS dialog in desktop app, modal tree in browser)
+browseBtn.addEventListener('click', async () => {
+  if (window.electronAPI && typeof window.electronAPI.selectDirectory === 'function') {
+    const selected = await window.electronAPI.selectDirectory(projectPathInput.value.trim() || '');
+    if (selected) {
+      projectPathInput.value = selected;
+      state.projectDir = selected;
+      inspectDirectory(selected);
+    }
+    return;
+  }
   openFolderBrowser(projectPathInput.value.trim() || '');
 });
 
@@ -1001,5 +1010,17 @@ window.addEventListener('pagehide', () => {
   navigator.sendBeacon('/api/browser-closed');
 });
 
+// Register native project folder listener if running inside Electron standalone app
+if (window.electronAPI && typeof window.electronAPI.onProjectSelected === 'function') {
+  window.electronAPI.onProjectSelected((selectedPath) => {
+    if (selectedPath) {
+      projectPathInput.value = selectedPath;
+      state.projectDir = selectedPath;
+      inspectDirectory(selectedPath);
+    }
+  });
+}
+
 renderRecentChips();
 initSSE();
+

@@ -1,0 +1,136 @@
+name: Release Standalone Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark release as pre-release'
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: 'Create as draft release'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Standalone (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac
+          - os: ubuntu-latest
+            platform: linux
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run verification test suite
+        run: npm test
+
+      # Linux build dependencies for AppImage / Debian
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libarchive-tools fakeroot
+
+      - name: Build standalone binaries
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            npx electron-builder --win --publish never
+          elif [ "${{ runner.os }}" = "macOS" ]; then
+            npx electron-builder --mac --publish never
+          else
+            npx electron-builder --linux --publish never
+          fi
+        shell: bash
+
+      - name: Stage release artifacts
+        shell: bash
+        run: |
+          mkdir -p staged-artifacts
+          find dist-desktop -maxdepth 1 \( -name "*.exe" -o -name "*.dmg" -o -name "*.zip" -o -name "*.AppImage" -o -name "*.deb" \) -exec cp {} staged-artifacts/ \;
+          ls -la staged-artifacts/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: anyrun-${{ matrix.platform }}-artifacts
+          path: staged-artifacts/*
+          retention-days: 2
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Generate SHA256 Checksums
+        working-directory: release-assets
+        run: |
+          echo "### Checksums (SHA256)" > ../CHECKSUMS.txt
+          echo '```text' >> ../CHECKSUMS.txt
+          sha256sum * >> ../CHECKSUMS.txt 2>/dev/null || true
+          echo '```' >> ../CHECKSUMS.txt
+          cat ../CHECKSUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: AnyRun ${{ github.ref_name }} // Multi-OS Standalone App
+          body: |
+            ## ▲ AnyRun Standalone Desktop & Universal Gateway
+
+            Autonomous one-click project runner, local proxy inspector, public tunnel creator, and scannable QR gateway.
+
+            ### Downloads
+
+            | Operating System | Format | Target |
+            | :--- | :--- | :--- |
+            | **Windows** | `.exe` (Installer / Portable) | `x64` |
+            | **macOS** | `.dmg` / `.zip` | Universal (`x64` & Apple Silicon `arm64`) |
+            | **Linux** | `.AppImage` / `.deb` | `x64` |
+
+            ### Quick Verification
+            $(cat CHECKSUMS.txt)
+          files: release-assets/*
+          draft: ${{ github.event.inputs.draft == 'true' }}
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          generate_release_notes: true

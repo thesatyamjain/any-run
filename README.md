@@ -50,16 +50,18 @@ flowchart TD
   - [Method A: Double-Click or Drag & Drop (Windows)](#method-a-double-click-or-drag--drop-windows)
   - [Method B: Command-Line Interface](#method-b-command-line-interface)
   - [Method C: Interactive Web Control Center](#method-c-interactive-web-control-center)
-- [2. CLI Usage & Options](#2-cli-usage--options)
-- [3. Interactive Terminal Shortcuts](#3-interactive-terminal-shortcuts)
-- [4. Dual-Mode QR & Access Links](#4-dual-mode-qr--access-links)
-- [5. Web Control Center Features](#5-web-control-center-features)
-- [6. Multi-Architecture Detection Matrix](#6-multi-architecture-detection-matrix)
-- [7. How Port Detection Works](#7-how-port-detection-works)
-- [8. Deep Traffic Inspection & Request Replay](#8-deep-traffic-inspection--request-replay)
-- [9. REST API & SSE Specifications](#9-rest-api--sse-specifications)
-- [10. Production & Security Hardening](#10-production--security-hardening)
-- [11. Verification & Testing](#11-verification--testing)
+  - [Method D: Standalone Multi-OS Desktop App](#method-d-standalone-multi-os-desktop-app)
+- [2. Multi-OS Standalone App & Packaging](#2-multi-os-standalone-app--packaging)
+- [3. CLI Usage & Options](#3-cli-usage--options)
+- [4. Interactive Terminal Shortcuts](#4-interactive-terminal-shortcuts)
+- [5. Dual-Mode QR & Access Links](#5-dual-mode-qr--access-links)
+- [6. Web Control Center Features](#6-web-control-center-features)
+- [7. Multi-Architecture Detection Matrix](#7-multi-architecture-detection-matrix)
+- [8. How Port Detection Works](#8-how-port-detection-works)
+- [9. Deep Traffic Inspection & Request Replay](#9-deep-traffic-inspection--request-replay)
+- [10. REST API & SSE Specifications](#10-rest-api--sse-specifications)
+- [11. Production & Security Hardening](#11-production--security-hardening)
+- [12. Verification & Testing](#12-verification--testing)
 
 ---
 
@@ -84,10 +86,63 @@ any-run ./my-api --port 8000 --tunnel cloudflare
 
 ### Method C: Interactive Web Control Center
 ```bash
-# Launch the dashboard standalone:
+# Launch the web dashboard:
 npm start
 ```
-Open `http://localhost:3737` to browse local drives, select folders, view live terminal logs, and monitor HTTP traffic.
+Open `http://localhost:3737` in any web browser to browse local drives, select folders, view live terminal logs, and monitor HTTP traffic.
+
+### Method D: 1-Click Standalone Desktop App (Windows, macOS, Linux)
+- **Windows 1-Click**: Double-click [`run-app.bat`](file:///e:/any-run/run-app.bat) to launch the standalone app immediately.
+- **Windows Silent Launch**: Double-click [`run-app.vbs`](file:///e:/any-run/run-app.vbs) to launch with zero terminal window flash.
+- **Windows Drag & Drop**: Drag **any project folder** from File Explorer directly onto `run-app.bat` to launch AnyRun focused on that project.
+- **Create Desktop Shortcut**: Double-click [`create-desktop-shortcut.bat`](file:///e:/any-run/create-desktop-shortcut.bat) (or run `npm run shortcut`) to pin AnyRun directly to your Windows Desktop.
+- **macOS / Linux**: Run `./run-app.sh` (or `./run-app.sh /path/to/project`).
+- **Terminal Command**:
+  ```bash
+  npm run app      # or npm run desktop
+  ```
+
+---
+
+## 2. Multi-OS Standalone App & Packaging
+
+AnyRun is designed as a universal hybrid application: you can use it in your web browser or package it into standalone binaries across **Windows**, **macOS**, and **Linux**.
+
+### Standalone Capabilities
+- **Zero-Browser Standalone UI**: Sleek, framed dark-mode desktop window matching AnyRun's Swiss-industrial design aesthetics.
+- **Native File Dialogs**: Seamless OS directory chooser (`CmdOrCtrl+O` or "Browse" button) replaces web file modals.
+- **System Tray / Menu Bar**: Background residency with live runner status, one-click tunnel copy, restart, and quit actions.
+- **Native Desktop Notifications**: Alerts when public tunnels come online or processes require attention.
+- **Dual-Mode Serving**: The internal control server continues serving `http://127.0.0.1:3737`, allowing you to connect mobile devices, secondary monitors, or browser tabs simultaneously.
+
+### Build Commands
+
+| Target | Command | Output Artifact |
+| :--- | :--- | :--- |
+| **Current OS (Portable)** | `npm run build:app` | `dist-desktop/AnyRun-<os>-<arch>/` |
+| **Windows Executable** | `npm run build:app:win` | `dist-desktop/AnyRun-win32-x64/AnyRun.exe` |
+| **macOS Bundle** | `npm run build:app:mac` | `dist-desktop/*.dmg`, `*.zip` |
+| **Linux Package** | `npm run build:app:linux` | `dist-desktop/*.AppImage`, `*.deb` |
+| **All Platforms** | `npm run build:app:all` | All target installers |
+| **Electron-Builder Dist** | `npm run build:app:dist` | Full distribution installers |
+
+### Automated GitHub Releases
+
+AnyRun includes an automated GitHub Actions release pipeline ([`.github/workflows/release.yml`](file:///.github/workflows/release.yml)).
+
+Whenever a version tag is pushed (e.g. `v1.0.0`), the workflow automatically:
+1. Spawns parallel runners on **Windows**, **macOS**, and **Linux**.
+2. Runs the self-check verification test suite.
+3. Compiles standalone installers (`.exe`, `.dmg`, `.zip`, `.AppImage`, `.deb`).
+4. Generates cryptographic SHA256 checksums (`CHECKSUMS.txt`).
+5. Publishes a new GitHub Release with release notes and downloadable binaries.
+
+```bash
+# To trigger a new release:
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+*(You can also trigger releases on-demand via the GitHub Actions "Run workflow" button with pre-release/draft options).*
 
 ---
 

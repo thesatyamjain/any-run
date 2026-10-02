@@ -1,0 +1,38 @@
+# Auto-detect text files and normalize line endings across operating systems
+* text=auto
+
+# Source code and configuration files (enforce LF)
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.svg text eol=lf
+
+# Executable shell scripts & CLI entrypoints MUST have LF line endings
+*.sh text eol=lf
+bin/any-run.js text eol=lf
+
+# Windows command and host scripts MUST have CRLF line endings
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.vbs text eol=crlf
+
+# Binary assets
+*.ico binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.icns binary
+*.exe binary
+*.zip binary
+*.tar.gz binary
+*.dmg binary
+*.deb binary
+*.AppImage binary

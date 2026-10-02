@@ -41,5 +41,6 @@ desktop.ini
 # Build & Test outputs
 coverage/
 dist/
+dist-desktop/
 build/
 *.tmp
