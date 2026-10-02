@@ -28,6 +28,8 @@
   "build": {
     "appId": "com.anyrun.desktop",
     "productName": "AnyRun",
+    "publisherName": "The Software Co.",
+    "copyright": "Copyright © 2026 The Software Co.",
     "npmRebuild": false,
     "nodeGypRebuild": false,
     "directories": {
@@ -39,6 +41,9 @@
       "package.json"
     ],
     "win": {
+      "publisherName": [
+        "The Software Co."
+      ],
       "target": [
         {
           "target": "nsis",
@@ -97,7 +102,8 @@
           ]
         }
       ],
-      "maintainer": "Satyam Jain <creativitywithsatyam@gmail.com>",
+      "maintainer": "The Software Co. <creativitywithsatyam@gmail.com>",
+      "vendor": "The Software Co.",
       "category": "Development",
       "icon": "src/desktop/assets/icon.png"
     }
@@ -112,10 +118,11 @@
     "developer-tool"
   ],
   "author": {
-    "name": "Satyam Jain",
+    "name": "The Software Co.",
     "email": "creativitywithsatyam@gmail.com",
     "url": "https://github.com/thesatyamjain"
   },
+  "publisher": "The Software Co.",
   "license": "MIT",
   "repository": {
     "type": "git",

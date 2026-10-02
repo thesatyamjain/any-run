@@ -26,6 +26,7 @@ async function testDesktopApp() {
   // Verify multi-OS build targets
   assert.ok(pkg.build, 'electron-builder build config must be defined');
   assert.strictEqual(pkg.build.appId, 'com.anyrun.desktop');
+  assert.strictEqual(pkg.build.publisherName, 'The Software Co.');
   assert.ok(pkg.build.win, 'Windows target must be defined');
   assert.ok(pkg.build.mac, 'macOS target must be defined');
   assert.ok(pkg.build.linux, 'Linux target must be defined');
