@@ -28,7 +28,6 @@
   "build": {
     "appId": "com.anyrun.desktop",
     "productName": "AnyRun",
-    "publisherName": "The Software Co.",
     "copyright": "Copyright © 2026 The Software Co.",
     "npmRebuild": false,
     "nodeGypRebuild": false,
@@ -41,9 +40,6 @@
       "package.json"
     ],
     "win": {
-      "publisherName": [
-        "The Software Co."
-      ],
       "target": [
         {
           "target": "nsis",
