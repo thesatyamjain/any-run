@@ -6,7 +6,7 @@ Thank you for your interest in contributing to AnyRun! We welcome issues, pull r
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/<owner>/any-run.git
+   git clone https://github.com/thesatyamjain/any-run.git
    cd any-run
    ```
 

@@ -1,6 +1,6 @@
 # AnyRun // One-Click Universal Project Runner, Tunnel & QR Gateway
 
-[![CI](https://github.com/any-run/any-run/actions/workflows/ci.yml/badge.svg)](https://github.com/any-run/any-run/actions/workflows/ci.yml)
+[![CI](https://github.com/thesatyamjain/any-run/actions/workflows/ci.yml/badge.svg)](https://github.com/thesatyamjain/any-run/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)

@@ -76,7 +76,7 @@ async function runTests() {
     assert.strictEqual(pyDetection.type, 'python');
     assert.strictEqual(pyDetection.framework, 'FastAPI');
     assert.strictEqual(pyDetection.defaultPort, 8000);
-    assert.strictEqual(pyDetection.command, 'py');
+    assert.strictEqual(pyDetection.command, process.platform === 'win32' ? 'py' : 'python3');
     assert.deepStrictEqual(pyDetection.args, ['-m', 'uvicorn', 'main:app', '--host', '0.0.0.0', '--port', '8000', '--reload']);
     console.log('  [PASS] Python (FastAPI) detection verified.');
 

@@ -114,12 +114,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/any-run/any-run.git"
+    "url": "https://github.com/thesatyamjain/any-run.git"
   },
   "bugs": {
-    "url": "https://github.com/any-run/any-run/issues"
+    "url": "https://github.com/thesatyamjain/any-run/issues"
   },
-  "homepage": "https://github.com/any-run/any-run#readme",
+  "homepage": "https://github.com/thesatyamjain/any-run#readme",
   "files": [
     "bin",
     "src",

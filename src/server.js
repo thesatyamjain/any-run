@@ -477,6 +477,11 @@ export function locateProjectFolder(folderName) {
     }
   } catch (_) {}
 
+  // Current directory itself matches
+  if (path.basename(process.cwd()).toLowerCase() === cleanName.toLowerCase()) {
+    return process.cwd();
+  }
+
   const candidateDirs = [];
 
   // 1. Current working directory & parent/sibling
