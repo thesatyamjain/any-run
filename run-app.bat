@@ -30,5 +30,9 @@ if not exist "%EXE_PATH%" (
 )
 
 :: 4. Fallback to electron development runner
-start "" npx electron src/desktop/main.js %*
+if exist "%~dp0node_modules\.bin\electron.cmd" (
+    start "" "%~dp0node_modules\.bin\electron.cmd" src/desktop/main.js %*
+) else (
+    start "" npx electron src/desktop/main.js %*
+)
 exit /b 0

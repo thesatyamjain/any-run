@@ -13,36 +13,35 @@ console.log(`\n▲ ANYRUN // Standalone Multi-OS App Packager`);
 console.log(`Target: ${process.platform}-${process.arch}`);
 console.log(`Output: ${outDir}\n`);
 
-// Clean output directory
-if (fs.existsSync(outDir)) {
-  fs.rmSync(outDir, { recursive: true, force: true });
-}
-fs.mkdirSync(outDir, { recursive: true });
-
-// 1. Copy Electron distribution runtime
-const electronDist = path.join(rootDir, 'node_modules', 'electron', 'dist');
-if (!fs.existsSync(electronDist)) {
-  console.error(`[Error] Electron runtime not found at ${electronDist}`);
-  process.exit(1);
-}
-
-console.log('➜ Copying standalone Electron runtime...');
-fs.cpSync(electronDist, outDir, { recursive: true });
-
-// 2. Rename executable to AnyRun
 const exeName = process.platform === 'win32' ? `${APP_NAME}.exe` : APP_NAME;
-const origExe = path.join(outDir, process.platform === 'win32' ? 'electron.exe' : 'electron');
 const targetExe = path.join(outDir, exeName);
+const needsRuntimeCopy = !fs.existsSync(targetExe);
 
-if (fs.existsSync(origExe)) {
-  fs.renameSync(origExe, targetExe);
-}
+// 1. Copy Electron distribution runtime if not already installed
+if (needsRuntimeCopy) {
+  fs.mkdirSync(outDir, { recursive: true });
+  const electronDist = path.join(rootDir, 'node_modules', 'electron', 'dist');
+  if (!fs.existsSync(electronDist)) {
+    console.error(`[Error] Electron runtime not found at ${electronDist}`);
+    process.exit(1);
+  }
 
-// Ensure execution permissions on POSIX
-if (process.platform !== 'win32' && fs.existsSync(targetExe)) {
-  try {
-    fs.chmodSync(targetExe, 0o755);
-  } catch (_) {}
+  console.log('➜ Copying standalone Electron runtime (initial setup)...');
+  fs.cpSync(electronDist, outDir, { recursive: true });
+
+  const origExe = path.join(outDir, process.platform === 'win32' ? 'electron.exe' : 'electron');
+  if (fs.existsSync(origExe)) {
+    fs.renameSync(origExe, targetExe);
+  }
+
+  // Ensure execution permissions on POSIX
+  if (process.platform !== 'win32' && fs.existsSync(targetExe)) {
+    try {
+      fs.chmodSync(targetExe, 0o755);
+    } catch (_) {}
+  }
+} else {
+  console.log('➜ Standalone Electron runtime present. Updating app bundle...');
 }
 
 // 3. Assemble app bundle in resources/app

@@ -14,6 +14,11 @@ if (!gotLock) {
   process.exit(0);
 }
 
+// Hardware & rendering switches for instantaneous startup
+if (process.platform === 'win32') {
+  app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+}
+
 let mainWindow = null;
 let tray = null;
 let runner = null;
@@ -365,10 +370,17 @@ async function createMainWindow() {
     }
   });
 
-  mainWindow.once('ready-to-show', () => {
-    mainWindow.show();
-    mainWindow.focus();
-  });
+  const showWindow = () => {
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  };
+
+  mainWindow.once('ready-to-show', showWindow);
+  mainWindow.webContents.once('dom-ready', showWindow);
+  // Guarantee window paints immediately within 250ms
+  setTimeout(showWindow, 250);
 
   mainWindow.on('close', (event) => {
     if (!isQuitting && process.platform === 'darwin') {
@@ -376,9 +388,6 @@ async function createMainWindow() {
       mainWindow.hide();
     }
   });
-
-  // Load the web control center interface
-  await mainWindow.loadURL(webUrl);
 }
 
 // Second instance focus
@@ -398,7 +407,7 @@ app.on('second-instance', (event, commandLine) => {
 });
 
 app.whenReady().then(async () => {
-  // 1. Initialize ProjectRunner and Control Server
+  // 1. Initialize ProjectRunner and UI handlers
   runner = new ProjectRunner();
 
   // Subscribe runner state changes to update system tray and send desktop notifications
@@ -423,17 +432,21 @@ app.whenReady().then(async () => {
     }
   });
 
-  // 2. Start internal Control Server (without auto-exit so desktop stays open)
-  const serverResult = await startControlServer(runner, 3737, { autoExit: false });
+  setupIpcHandlers();
+  setupApplicationMenu();
+  setupTray();
+
+  // 2. Concurrently start internal Control Server and instantiate window
+  const serverPromise = startControlServer(runner, 3737, { autoExit: false });
+  const windowPromise = createMainWindow();
+
+  const [serverResult] = await Promise.all([serverPromise, windowPromise]);
   actualWebPort = serverResult.port;
   controlServer = serverResult;
   webUrl = `http://127.0.0.1:${actualWebPort}`;
 
-  // 3. Setup IPC, Menus, System Tray, and Main Window
-  setupIpcHandlers();
-  setupApplicationMenu();
-  setupTray();
-  await createMainWindow();
+  // 3. Load the web control center interface as soon as server is bound
+  mainWindow.loadURL(webUrl).catch(() => {});
 
   // If a project path was provided as a CLI or drag-and-drop argument, pass it to UI
   const launchArgs = app.isPackaged ? process.argv.slice(1) : process.argv.slice(2);
