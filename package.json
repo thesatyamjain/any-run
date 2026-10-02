@@ -97,6 +97,7 @@
           ]
         }
       ],
+      "maintainer": "Satyam Jain <creativitywithsatyam@gmail.com>",
       "category": "Development",
       "icon": "src/desktop/assets/icon.png"
     }
@@ -110,7 +111,11 @@
     "ngrok",
     "developer-tool"
   ],
-  "author": "AnyRun Open Source Community",
+  "author": {
+    "name": "Satyam Jain",
+    "email": "creativitywithsatyam@gmail.com",
+    "url": "https://github.com/thesatyamjain"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",

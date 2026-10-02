@@ -29,6 +29,11 @@ async function testDesktopApp() {
   assert.ok(pkg.build.win, 'Windows target must be defined');
   assert.ok(pkg.build.mac, 'macOS target must be defined');
   assert.ok(pkg.build.linux, 'Linux target must be defined');
+  assert.ok(
+    (pkg.build.linux.maintainer && pkg.build.linux.maintainer.includes('@')) ||
+    (pkg.author && (typeof pkg.author === 'object' ? pkg.author.email : pkg.author.includes('@'))),
+    'author email or linux.maintainer must be defined for Linux .deb packaging'
+  );
   console.log('  [PASS] package.json desktop & multi-OS configurations verified.');
 
   // 2. Verify Desktop App Source Files
