@@ -18,6 +18,29 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
+const staticCache = new Map();
+
+function getCachedStaticFile(filePath, ext) {
+  if (staticCache.has(filePath)) {
+    return staticCache.get(filePath);
+  }
+  try {
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      return null;
+    }
+    const content = fs.readFileSync(filePath);
+    const mime = MIME_TYPES[ext] || 'application/octet-stream';
+    const etag = `"${content.length}"`;
+    const cached = { content, mime, etag };
+    if (content.length < 5 * 1024 * 1024) {
+      staticCache.set(filePath, cached);
+    }
+    return cached;
+  } catch (_) {
+    return null;
+  }
+}
+
 /**
  * Creates and starts the AnyRun Web Control Server.
  * @param {import('./runner.js').ProjectRunner} runner
@@ -392,12 +415,21 @@ export function startControlServer(runner, port = 3737, options = {}) {
         res.end('403 Forbidden');
         return;
       }
-
-      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-        const ext = path.extname(filePath).toLowerCase();
-        const mime = MIME_TYPES[ext] || 'application/octet-stream';
-        res.writeHead(200, { 'Content-Type': mime });
-        fs.createReadStream(filePath).pipe(res);
+      const ext = path.extname(filePath).toLowerCase();
+      const cached = getCachedStaticFile(filePath, ext);
+      if (cached) {
+        if (req.headers['if-none-match'] === cached.etag) {
+          res.writeHead(304);
+          res.end();
+          return;
+        }
+        res.writeHead(200, {
+          'Content-Type': cached.mime,
+          'Content-Length': cached.content.length,
+          'ETag': cached.etag,
+          'Cache-Control': 'public, max-age=3600'
+        });
+        res.end(cached.content);
         return;
       }
 

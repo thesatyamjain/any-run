@@ -93,10 +93,10 @@ export function extractPortFromLogs(text) {
  * @param {string} host
  * @returns {Promise<boolean>}
  */
-function probeSocket(port, host) {
+function probeSocket(port, host, timeoutMs = 200) {
   return new Promise((resolve) => {
     const socket = new net.Socket();
-    socket.setTimeout(600);
+    socket.setTimeout(timeoutMs);
 
     socket.on('connect', () => {
       socket.destroy();
@@ -131,12 +131,14 @@ export async function isPortOpen(port, preferredHost = null) {
     return { open: ok, host: preferredHost };
   }
 
-  const targets = ['localhost', '127.0.0.1', '::1'];
-  for (const host of targets) {
-    const ok = await probeSocket(port, host);
-    if (ok) {
-      return { open: true, host };
-    }
+  // Fast parallel loopback check (127.0.0.1 tested first to bypass DNS resolution)
+  const targets = ['127.0.0.1', 'localhost', '::1'];
+  const results = await Promise.all(
+    targets.map(async host => ({ host, ok: await probeSocket(port, host) }))
+  );
+  const found = results.find(r => r.ok);
+  if (found) {
+    return { open: true, host: found.host };
   }
 
   return { open: false, host: 'localhost' };

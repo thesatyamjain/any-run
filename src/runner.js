@@ -299,13 +299,20 @@ export class ProjectRunner {
       this.tunnelUrl = this.tunnelObj.url;
       this.addLog('system', `Public Tunnel online: ${this.tunnelUrl}`);
 
-      // 4. Generate QR Codes (Both Public Tunnel and Local Wi-Fi)
-      this.qrTerminal = await generateTerminalQR(this.tunnelUrl);
-      this.qrDataUrl = await generateDataUrlQR(this.tunnelUrl);
-      this.qrSvg = await generateSvgQR(this.tunnelUrl);
+      // 4. Generate QR Codes concurrently (Both Public Tunnel and Local Wi-Fi)
+      const [qrTerminal, qrDataUrl, qrSvg, qrLanDataUrl, qrLanSvg] = await Promise.all([
+        generateTerminalQR(this.tunnelUrl),
+        generateDataUrlQR(this.tunnelUrl),
+        generateSvgQR(this.tunnelUrl),
+        generateDataUrlQR(this.lanUrl),
+        generateSvgQR(this.lanUrl)
+      ]);
 
-      this.qrLanDataUrl = await generateDataUrlQR(this.lanUrl);
-      this.qrLanSvg = await generateSvgQR(this.lanUrl);
+      this.qrTerminal = qrTerminal;
+      this.qrDataUrl = qrDataUrl;
+      this.qrSvg = qrSvg;
+      this.qrLanDataUrl = qrLanDataUrl;
+      this.qrLanSvg = qrLanSvg;
 
       this.printTerminalBanner();
 

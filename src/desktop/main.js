@@ -18,6 +18,10 @@ if (!gotLock) {
 if (process.platform === 'win32') {
   app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
 }
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-breakpad');
+app.commandLine.appendSwitch('disable-component-update');
 
 let mainWindow = null;
 let tray = null;
@@ -343,7 +347,8 @@ async function createMainWindow() {
       sandbox: true,
       webSecurity: true,
       allowRunningInsecureContent: false,
-      devTools: !app.isPackaged
+      devTools: !app.isPackaged,
+      spellcheck: false
     }
   });
 

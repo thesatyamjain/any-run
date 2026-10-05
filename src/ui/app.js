@@ -372,6 +372,11 @@ function appendLog(entry) {
 
   consoleOutput.appendChild(div);
 
+  // Maintain bounded DOM window (max 400 lines) to prevent memory bloat and layout thrashing
+  while (consoleOutput.children.length > 400) {
+    consoleOutput.removeChild(consoleOutput.firstElementChild);
+  }
+
   if (autoScrollCheck.checked) {
     consoleOutput.scrollTop = consoleOutput.scrollHeight;
   }
@@ -415,6 +420,11 @@ function appendRequest(reqEntry) {
     trafficRows.insertBefore(row, trafficRows.firstChild);
   } else {
     trafficRows.appendChild(row);
+  }
+
+  // Maintain bounded DOM table rows (max 250 items)
+  while (trafficRows.children.length > 250) {
+    trafficRows.removeChild(trafficRows.lastElementChild);
   }
 
   applyTrafficFilters();
