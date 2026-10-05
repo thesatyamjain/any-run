@@ -68,6 +68,23 @@ async function runTests() {
     assert.deepStrictEqual(nodeDetection.args, ['run', 'dev']);
     console.log('  [PASS] Node.js (Vite) custom port detection verified.');
 
+    // 3a-2. Node.js pnpm mock
+    const pnpmDir = path.join(tmpDir, 'node-pnpm');
+    fs.mkdirSync(pnpmDir);
+    fs.writeFileSync(path.join(pnpmDir, 'package.json'), JSON.stringify({
+      name: 'mock-pnpm-app',
+      scripts: { dev: 'next dev' },
+      dependencies: { next: '^14.0.0' }
+    }));
+    fs.writeFileSync(path.join(pnpmDir, 'pnpm-lock.yaml'), 'lockfileVersion: 5.4');
+
+    const pnpmDetection = await detectProject(pnpmDir);
+    assert.strictEqual(pnpmDetection.packageManager, 'pnpm');
+    assert.strictEqual(pnpmDetection.command, 'pnpm');
+    assert.deepStrictEqual(pnpmDetection.args, ['run', 'dev']);
+    assert.strictEqual(pnpmDetection.installCommand, 'pnpm install');
+    console.log('  [PASS] Node.js (pnpm) package manager detection verified.');
+
     // 3b. Python FastAPI mock
     const pyDir = path.join(tmpDir, 'python-fastapi');
     fs.mkdirSync(pyDir);

@@ -84,11 +84,15 @@ export async function detectProject(projectDir) {
     const scripts = pkg.scripts || {};
     const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
 
-    // Package manager
+    // Package manager (pnpm, yarn, bun, npm)
     let pkgManager = 'npm';
-    if (fileSet.has('pnpm-lock.yaml')) pkgManager = 'pnpm';
-    else if (fileSet.has('yarn.lock')) pkgManager = 'yarn';
-    else if (fileSet.has('bun.lockb') || fileSet.has('bun.lock')) pkgManager = 'bun';
+    if (fileSet.has('pnpm-lock.yaml') || fileSet.has('pnpm-workspace.yaml') || fileSet.has('.pnpmfile.cjs') || (pkg.packageManager && pkg.packageManager.startsWith('pnpm'))) {
+      pkgManager = 'pnpm';
+    } else if (fileSet.has('yarn.lock') || (pkg.packageManager && pkg.packageManager.startsWith('yarn'))) {
+      pkgManager = 'yarn';
+    } else if (fileSet.has('bun.lockb') || fileSet.has('bun.lock') || (pkg.packageManager && pkg.packageManager.startsWith('bun'))) {
+      pkgManager = 'bun';
+    }
 
     // Framework detection & Port defaults
     let framework = 'Node.js';
