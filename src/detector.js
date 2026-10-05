@@ -1,14 +1,39 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
+
+const binaryAvailabilityCache = new Map();
+
+/**
+ * Checks if a CLI binary (pnpm, yarn, bun, npm) is accessible in PATH.
+ * @param {string} name
+ * @returns {boolean}
+ */
+export function isBinaryAvailable(name) {
+  if (!name) return false;
+  if (binaryAvailabilityCache.has(name)) {
+    return binaryAvailabilityCache.get(name);
+  }
+  try {
+    const cmd = process.platform === 'win32' ? `where.exe ${name}` : `which ${name}`;
+    execSync(cmd, { stdio: 'ignore' });
+    binaryAvailabilityCache.set(name, true);
+    return true;
+  } catch (_) {
+    binaryAvailabilityCache.set(name, false);
+    return false;
+  }
+}
 
 /**
  * Detects the runtime, framework, entrypoint, and recommended configuration
  * for a project in any directory.
  *
  * @param {string} projectDir
+ * @param {object} [options]
  * @returns {Promise<ProjectConfig>}
  */
-export async function detectProject(projectDir) {
+export async function detectProject(projectDir, options = {}) {
   const resolvedDir = path.resolve(projectDir);
 
   if (!fs.existsSync(resolvedDir)) {
@@ -85,14 +110,60 @@ export async function detectProject(projectDir) {
     const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
 
     // Package manager (pnpm, yarn, bun, npm)
-    let pkgManager = 'npm';
-    if (fileSet.has('pnpm-lock.yaml') || fileSet.has('pnpm-workspace.yaml') || fileSet.has('.pnpmfile.cjs') || (pkg.packageManager && pkg.packageManager.startsWith('pnpm'))) {
-      pkgManager = 'pnpm';
-    } else if (fileSet.has('yarn.lock') || (pkg.packageManager && pkg.packageManager.startsWith('yarn'))) {
-      pkgManager = 'yarn';
-    } else if (fileSet.has('bun.lockb') || fileSet.has('bun.lock') || (pkg.packageManager && pkg.packageManager.startsWith('bun'))) {
-      pkgManager = 'bun';
+    let pkgManager = options.packageManager && options.packageManager !== 'auto'
+      ? options.packageManager
+      : null;
+
+    if (!pkgManager) {
+      if (pkg.packageManager) {
+        if (pkg.packageManager.startsWith('pnpm')) pkgManager = 'pnpm';
+        else if (pkg.packageManager.startsWith('yarn')) pkgManager = 'yarn';
+        else if (pkg.packageManager.startsWith('bun')) pkgManager = 'bun';
+        else if (pkg.packageManager.startsWith('npm')) pkgManager = 'npm';
+      }
+
+      if (!pkgManager) {
+        const lockCandidates = [];
+
+        if (fileSet.has('pnpm-lock.yaml') || fileSet.has('pnpm-workspace.yaml') || fileSet.has('.pnpmfile.cjs')) {
+          let mtime = 0;
+          try { mtime = fs.statSync(path.join(resolvedDir, 'pnpm-lock.yaml')).mtimeMs; } catch (_) {}
+          lockCandidates.push({ pm: 'pnpm', mtime });
+        }
+        if (fileSet.has('package-lock.json')) {
+          let mtime = 0;
+          try { mtime = fs.statSync(path.join(resolvedDir, 'package-lock.json')).mtimeMs; } catch (_) {}
+          lockCandidates.push({ pm: 'npm', mtime });
+        }
+        if (fileSet.has('yarn.lock')) {
+          let mtime = 0;
+          try { mtime = fs.statSync(path.join(resolvedDir, 'yarn.lock')).mtimeMs; } catch (_) {}
+          lockCandidates.push({ pm: 'yarn', mtime });
+        }
+        if (fileSet.has('bun.lockb') || fileSet.has('bun.lock')) {
+          let mtime = 0;
+          const bunFile = fileSet.has('bun.lockb') ? 'bun.lockb' : 'bun.lock';
+          try { mtime = fs.statSync(path.join(resolvedDir, bunFile)).mtimeMs; } catch (_) {}
+          lockCandidates.push({ pm: 'bun', mtime });
+        }
+
+        if (lockCandidates.length === 1) {
+          pkgManager = lockCandidates[0].pm;
+        } else if (lockCandidates.length > 1) {
+          // If multiple lockfiles exist, prioritize the one actively updated most recently
+          lockCandidates.sort((a, b) => b.mtime - a.mtime);
+          pkgManager = lockCandidates[0].pm;
+        } else {
+          pkgManager = 'npm';
+        }
+      }
     }
+
+    // Safety fallback: if detected package manager is not installed in system PATH, gracefully fallback to npm
+    if (pkgManager && pkgManager !== 'npm' && !isBinaryAvailable(pkgManager)) {
+      pkgManager = 'npm';
+    }
+    if (!pkgManager) pkgManager = 'npm';
 
     // Framework detection & Port defaults
     let framework = 'Node.js';

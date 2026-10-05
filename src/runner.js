@@ -111,14 +111,15 @@ export class ProjectRunner {
       qrLanDataUrl: this.qrLanDataUrl,
       qrLanSvg: this.qrLanSvg,
       errorMessage: this.errorMessage,
+      packageManager: this.packageManager || (this.projectConfig ? this.projectConfig.packageManager : null),
       systemStats: this.getSystemStats(),
       logCount: this.logs.length,
       requestCount: this.requests.length
     };
   }
 
-  async scan(projectDir) {
-    return await detectProject(projectDir);
+  async scan(projectDir, options = {}) {
+    return await detectProject(projectDir, options);
   }
 
   async start({
@@ -126,7 +127,8 @@ export class ProjectRunner {
     portOverride = null,
     tunnelProvider = 'auto',
     skipInstall = false,
-    commandOverride = null
+    commandOverride = null,
+    packageManager = null
   }) {
     if (this.status === 'running' || this.status === 'starting' || this.status === 'installing') {
       await this.stop();
@@ -134,6 +136,7 @@ export class ProjectRunner {
 
     this.projectDir = path.resolve(projectDir);
     this.tunnelProvider = tunnelProvider;
+    this.packageManager = packageManager;
     this.errorMessage = null;
     this.tunnelUrl = null;
     this.lanUrl = null;
@@ -149,8 +152,9 @@ export class ProjectRunner {
     this.addLog('system', `Target project directory: ${this.projectDir}`);
 
     try {
-      this.projectConfig = await detectProject(this.projectDir);
-      this.addLog('system', `Architecture detected: ${this.projectConfig.name} [${this.projectConfig.framework}]`);
+      this.projectConfig = await detectProject(this.projectDir, { packageManager });
+      const pmLabel = this.projectConfig.packageManager ? ` [pm: ${this.projectConfig.packageManager}]` : '';
+      this.addLog('system', `Architecture detected: ${this.projectConfig.name} [${this.projectConfig.framework}]${pmLabel}`);
 
       // 1. Dependency check
       if (this.projectConfig.needsInstall && !skipInstall) {
@@ -387,11 +391,13 @@ export class ProjectRunner {
     const currentDir = this.projectDir;
     const currentPort = this.activePort;
     const currentTunnel = this.tunnelProvider;
+    const currentPm = this.packageManager;
     await this.stop();
     return await this.start({
       projectDir: currentDir,
       portOverride: currentPort,
-      tunnelProvider: currentTunnel
+      tunnelProvider: currentTunnel,
+      packageManager: currentPm
     });
   }
 

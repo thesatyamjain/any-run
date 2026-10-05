@@ -165,7 +165,7 @@ export function startControlServer(runner, port = 3737, options = {}) {
         try {
           const body = await parseJsonBody(req);
           const projectPath = body.path || process.cwd();
-          const config = await runner.scan(projectPath);
+          const config = await runner.scan(projectPath, { packageManager: body.packageManager || null });
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true, config }));
         } catch (err) {
@@ -186,7 +186,8 @@ export function startControlServer(runner, port = 3737, options = {}) {
             portOverride: body.port ? parseInt(body.port, 10) : null,
             tunnelProvider: body.tunnel || 'auto',
             skipInstall: Boolean(body.skipInstall),
-            commandOverride: body.command || null
+            commandOverride: body.command || null,
+            packageManager: body.packageManager || null
           }).catch((e) => {
             // runner logs and state will capture this
           });

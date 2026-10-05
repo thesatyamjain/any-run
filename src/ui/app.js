@@ -41,6 +41,7 @@ const specCommand = document.getElementById('specCommand');
 
 const portOverrideInput = document.getElementById('portOverrideInput');
 const tunnelSelect = document.getElementById('tunnelSelect');
+const pmSelect = document.getElementById('pmSelect');
 
 const runActionBtn = document.getElementById('runActionBtn');
 const runActionText = document.getElementById('runActionText');
@@ -329,6 +330,11 @@ function updateState(newState) {
       : `${state.projectConfig.command} ${state.projectConfig.args.join(' ')}`;
     specCommand.textContent = cmdStr;
 
+    if (pmSelect && state.projectConfig.packageManager && pmSelect.value === 'auto') {
+      const autoOpt = pmSelect.querySelector('option[value="auto"]');
+      if (autoOpt) autoOpt.textContent = `Auto (${state.projectConfig.packageManager})`;
+    }
+
     if (!portOverrideInput.value && state.projectConfig.defaultPort) {
       portOverrideInput.placeholder = String(state.projectConfig.defaultPort);
     }
@@ -601,7 +607,10 @@ async function inspectDirectory(targetPath) {
     const res = await fetch('/api/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: dir })
+      body: JSON.stringify({
+        path: dir,
+        packageManager: pmSelect ? pmSelect.value : 'auto'
+      })
     });
     const data = await res.json();
     if (data.success) {
@@ -616,6 +625,14 @@ async function inspectDirectory(targetPath) {
     archBadge.textContent = 'ERROR';
     console.error(err);
   }
+}
+
+if (pmSelect) {
+  pmSelect.addEventListener('change', () => {
+    if (projectPathInput.value.trim()) {
+      inspectDirectory();
+    }
+  });
 }
 
 // Trigger Run / Stop
@@ -636,7 +653,8 @@ runActionBtn.addEventListener('click', async () => {
     const payload = {
       path: projectPath,
       port: portOverrideInput.value ? parseInt(portOverrideInput.value, 10) : null,
-      tunnel: tunnelSelect.value
+      tunnel: tunnelSelect.value,
+      packageManager: pmSelect ? pmSelect.value : 'auto'
     };
 
     try {

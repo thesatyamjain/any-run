@@ -134,6 +134,16 @@
         <!-- Configuration Settings Bar -->
         <div class="config-bar">
           <div class="config-col">
+            <label for="pmSelect">PACKAGE MANAGER</label>
+            <select id="pmSelect">
+              <option value="auto">Auto-Detect</option>
+              <option value="pnpm">pnpm</option>
+              <option value="npm">npm</option>
+              <option value="yarn">yarn</option>
+              <option value="bun">bun</option>
+            </select>
+          </div>
+          <div class="config-col">
             <label for="portOverrideInput">PORT ASSIGNMENT</label>
             <input type="number" id="portOverrideInput" placeholder="Auto" min="1024" max="65535">
           </div>

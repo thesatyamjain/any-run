@@ -58,59 +58,65 @@ fs.cpSync(path.join(rootDir, 'src'), path.join(appBundleDir, 'src'), { recursive
 // Copy bin
 fs.cpSync(path.join(rootDir, 'bin'), path.join(appBundleDir, 'bin'), { recursive: true });
 
-// Copy production dependencies from node_modules
-console.log('➜ Bundling and optimizing runtime dependencies...');
+// Copy production dependencies from node_modules (cached after first build)
 const appNodeModules = path.join(appBundleDir, 'node_modules');
-fs.mkdirSync(appNodeModules, { recursive: true });
+const needsDepsCopy = !fs.existsSync(appNodeModules) || fs.readdirSync(appNodeModules).length < 5;
 
-const prodPackages = [
-  'localtunnel',
-  'qrcode',
-  'axios',
-  'debug',
-  'ms',
-  'dargs',
-  'openurl',
-  'yargs',
-  'cliui',
-  'string-width',
-  'strip-ansi',
-  'ansi-regex',
-  'wrap-ansi',
-  'pngjs',
-  'dijkstrajs'
-];
+if (needsDepsCopy) {
+  console.log('➜ Bundling and optimizing runtime dependencies...');
+  fs.mkdirSync(appNodeModules, { recursive: true });
 
-for (const pkg of prodPackages) {
-  const srcPkg = path.join(rootDir, 'node_modules', pkg);
-  if (fs.existsSync(srcPkg)) {
-    fs.cpSync(srcPkg, path.join(appNodeModules, pkg), { recursive: true });
+  const prodPackages = [
+    'localtunnel',
+    'qrcode',
+    'axios',
+    'debug',
+    'ms',
+    'dargs',
+    'openurl',
+    'yargs',
+    'cliui',
+    'string-width',
+    'strip-ansi',
+    'ansi-regex',
+    'wrap-ansi',
+    'pngjs',
+    'dijkstrajs'
+  ];
+
+  for (const pkg of prodPackages) {
+    const srcPkg = path.join(rootDir, 'node_modules', pkg);
+    if (fs.existsSync(srcPkg)) {
+      fs.cpSync(srcPkg, path.join(appNodeModules, pkg), { recursive: true });
+    }
   }
-}
 
-// Prune non-production clutter (test folders, documentation, source maps) from bundled dependencies
-function pruneBloat(dir) {
-  try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        const lower = entry.name.toLowerCase();
-        if (['test', 'tests', '__tests__', 'docs', '.github'].includes(lower)) {
-          fs.rmSync(fullPath, { recursive: true, force: true });
-        } else {
-          pruneBloat(fullPath);
-        }
-      } else if (entry.isFile()) {
-        if (entry.name.endsWith('.map') || entry.name.endsWith('.md') && entry.name.toLowerCase() !== 'license') {
-          fs.unlinkSync(fullPath);
+  // Prune non-production clutter (test folders, documentation, source maps) from bundled dependencies
+  function pruneBloat(dir) {
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          const lower = entry.name.toLowerCase();
+          if (['test', 'tests', '__tests__', 'docs', '.github'].includes(lower)) {
+            fs.rmSync(fullPath, { recursive: true, force: true });
+          } else {
+            pruneBloat(fullPath);
+          }
+        } else if (entry.isFile()) {
+          if (entry.name.endsWith('.map') || (entry.name.endsWith('.md') && entry.name.toLowerCase() !== 'license')) {
+            fs.unlinkSync(fullPath);
+          }
         }
       }
-    }
-  } catch (_) {}
-}
+    } catch (_) {}
+  }
 
-pruneBloat(appNodeModules);
+  pruneBloat(appNodeModules);
+} else {
+  console.log('➜ Runtime dependencies already cached in application bundle.');
+}
 
 console.log(`\n✔ Standalone multi-OS standalone application created successfully!`);
 console.log(`Executable location: ${targetExe}\n`);

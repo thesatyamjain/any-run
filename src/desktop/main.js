@@ -378,9 +378,9 @@ async function createMainWindow() {
   };
 
   mainWindow.once('ready-to-show', showWindow);
-  mainWindow.webContents.once('dom-ready', showWindow);
-  // Guarantee window paints immediately within 250ms
-  setTimeout(showWindow, 250);
+  mainWindow.webContents.once('did-finish-load', showWindow);
+  // Guarantee window displays even if renderer events are delayed
+  setTimeout(showWindow, 1500);
 
   mainWindow.on('close', (event) => {
     if (!isQuitting && process.platform === 'darwin') {
@@ -445,8 +445,22 @@ app.whenReady().then(async () => {
   controlServer = serverResult;
   webUrl = `http://127.0.0.1:${actualWebPort}`;
 
-  // 3. Load the web control center interface as soon as server is bound
-  mainWindow.loadURL(webUrl).catch(() => {});
+  // 3. Resiliently load web control center interface with retry
+  const loadWithRetry = async (url, retries = 5, delay = 150) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await mainWindow.loadURL(url);
+        return;
+      } catch (err) {
+        if (i === retries - 1) {
+          console.error('[AnyRun Desktop] Failed to load dashboard:', err.message);
+        } else {
+          await new Promise(r => setTimeout(r, delay));
+        }
+      }
+    }
+  };
+  await loadWithRetry(webUrl);
 
   // If a project path was provided as a CLI or drag-and-drop argument, pass it to UI
   const launchArgs = app.isPackaged ? process.argv.slice(1) : process.argv.slice(2);

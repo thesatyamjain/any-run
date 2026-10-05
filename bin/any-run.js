@@ -37,6 +37,7 @@ if (args.includes('--help') || args.includes('-h')) {
 let projectDir = null;
 let portOverride = null;
 let tunnelProvider = 'auto';
+let packageManager = null;
 let webPort = 3737;
 let autoOpen = true;
 
@@ -48,6 +49,8 @@ for (let i = 0; i < args.length; i++) {
     portOverride = parseInt(args[++i], 10);
   } else if (arg === '--tunnel' && args[i + 1]) {
     tunnelProvider = args[++i];
+  } else if ((arg === '--pm' || arg === '--package-manager') && args[i + 1]) {
+    packageManager = args[++i];
   } else if (arg === '--web-port' && args[i + 1]) {
     webPort = parseInt(args[++i], 10);
   } else if (arg === '--no-open') {
@@ -180,7 +183,8 @@ async function main() {
       await runner.start({
         projectDir: resolvedPath,
         portOverride,
-        tunnelProvider
+        tunnelProvider,
+        packageManager
       });
       console.log(`\n  \x1b[90mShortcuts: [o] open  [r] restart  [c] copy tunnel  [w] copy wifi  [q] quit\x1b[0m\n`);
     } catch (err) {

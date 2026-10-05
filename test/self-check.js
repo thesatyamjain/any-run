@@ -83,7 +83,33 @@ async function runTests() {
     assert.strictEqual(pnpmDetection.command, 'pnpm');
     assert.deepStrictEqual(pnpmDetection.args, ['run', 'dev']);
     assert.strictEqual(pnpmDetection.installCommand, 'pnpm install');
-    console.log('  [PASS] Node.js (pnpm) package manager detection verified.');
+
+    // 3a-3. Manual package manager override
+    const overrideDetection = await detectProject(pnpmDir, { packageManager: 'npm' });
+    assert.strictEqual(overrideDetection.packageManager, 'npm', 'Explicit npm override must take precedence');
+    assert.strictEqual(overrideDetection.command, 'npm');
+    assert.strictEqual(overrideDetection.installCommand, 'npm install');
+
+    // 3a-4. Dual lockfile timestamp arbitration
+    const dualLockDir = path.join(tmpDir, 'node-dual-lock');
+    fs.mkdirSync(dualLockDir);
+    fs.writeFileSync(path.join(dualLockDir, 'package.json'), JSON.stringify({
+      name: 'mock-dual-app',
+      scripts: { start: 'node index.js' }
+    }));
+    const pnpmLockPath = path.join(dualLockDir, 'pnpm-lock.yaml');
+    const npmLockPath = path.join(dualLockDir, 'package-lock.json');
+    fs.writeFileSync(pnpmLockPath, 'lockfileVersion: 5.4');
+    fs.writeFileSync(npmLockPath, '{}');
+    // Set npmLock to be newer
+    const now = Date.now() / 1000;
+    fs.utimesSync(pnpmLockPath, now - 50, now - 50);
+    fs.utimesSync(npmLockPath, now, now);
+
+    const dualDetection = await detectProject(dualLockDir);
+    assert.strictEqual(dualDetection.packageManager, 'npm', 'Newer lockfile (package-lock.json) must win arbitration');
+
+    console.log('  [PASS] Node.js (pnpm / npm / override / arbitration) verified.');
 
     // 3b. Python FastAPI mock
     const pyDir = path.join(tmpDir, 'python-fastapi');

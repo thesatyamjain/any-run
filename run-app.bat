@@ -4,8 +4,12 @@ cd /d "%~dp0"
 
 set "EXE_PATH=%~dp0dist-desktop\AnyRun-win32-x64\AnyRun.exe"
 
-:: 1. If standalone binary exists, launch it immediately and exit
+:: 1. If standalone binary exists, fast-sync latest sources (10ms) and launch immediately
 if exist "%EXE_PATH%" (
+    if exist "%~dp0src" (
+        robocopy "%~dp0src" "%~dp0dist-desktop\AnyRun-win32-x64\resources\app\src" /E /XO /NDL /NFL /NJH /NJS >nul 2>&1
+        copy /Y "%~dp0package.json" "%~dp0dist-desktop\AnyRun-win32-x64\resources\app\package.json" >nul 2>&1
+    )
     start "" "%EXE_PATH%" %*
     exit /b 0
 )
