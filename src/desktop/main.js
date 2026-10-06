@@ -261,7 +261,7 @@ function setupApplicationMenu() {
               type: 'info',
               title: 'AnyRun Desktop',
               message: 'AnyRun Universal Runner & Tunnel Gateway',
-              detail: `Version: ${app.getVersion() || '1.0.0'}\nMulti-OS Standalone Edition\nNode.js: ${process.versions.node}\nElectron: ${process.versions.electron}`
+              detail: `Version: ${app.getVersion() || '1.0.0'}\nBuilt by The Software Labs\nPublisher: The Software Co.\nNode.js: ${process.versions.node}\nElectron: ${process.versions.electron}`
             });
           }
         }

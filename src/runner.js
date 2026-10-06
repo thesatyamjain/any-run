@@ -430,7 +430,7 @@ export class ProjectRunner {
 
   printTerminalBanner() {
     console.log(`
-  \x1b[1m\x1b[32m✔ ANYRUN GATEWAY ACTIVE\x1b[0m
+  \x1b[1m\x1b[32m✔ ANYRUN GATEWAY ACTIVE\x1b[0m \x1b[90m(Built by The Software Labs)\x1b[0m
   \x1b[90m--------------------------------------------------------\x1b[0m
   \x1b[33m➜  Architecture:\x1b[0m  \x1b[1m${this.projectConfig?.name || 'Generic'}\x1b[0m
   \x1b[32m➜  Local Service:\x1b[0m http://${this.activeHost}:${this.activePort}

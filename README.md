@@ -3,9 +3,10 @@
 [![CI](https://github.com/thesatyamjain/any-run/actions/workflows/ci.yml/badge.svg)](https://github.com/thesatyamjain/any-run/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Built by The Software Labs](https://img.shields.io/badge/built%20by-The%20Software%20Labs-blue.svg)](https://github.com/thesatyamjain/AnyRun)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**AnyRun** is an autonomous, one-click developer utility that inspects, configures, and launches projects across any software architecture, dynamically detects the listening port, establishes an instant public HTTPS tunnel, and displays scannable QR codes in both your terminal and a local web control dashboard.
+**AnyRun** is an autonomous, one-click developer utility built by **The Software Labs**. It inspects, configures, and launches projects across any software architecture, dynamically detects the listening port, establishes an instant public HTTPS tunnel, and displays scannable QR codes in both your terminal and a local web control dashboard.
 
 ---
 
@@ -353,6 +354,13 @@ Testing zero-dependency Interception Reverse Proxy...
 
 ---
 
+## Author & Attribution
+
+- **Publisher**: The Software Co. (<thesoftwarecompany@zohomail.in>)
+- **Engineered & Built by**: **The Software Labs**
+
+---
+
 ## License
 
-MIT © [AnyRun Contributors](LICENSE)
+MIT © [The Software Co.](LICENSE)
